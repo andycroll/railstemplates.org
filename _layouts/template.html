@@ -1,0 +1,150 @@
+---
+layout: default
+---
+
+<article class="template">
+  <header class="template-header">
+    <h1>{{ page.title }}</h1>
+    <p class="template-description">{{ page.description }}</p>
+  </header>
+
+  <div class="installation">
+    <h2>Installation</h2>
+    <div class="code-block">
+      <code>rails new myapp -m &lt;(curl -s {{ site.url }}{{ page.url }})</code>
+      <button class="copy-btn" onclick="copyToClipboard(this)" data-text="rails new myapp -m <(curl -s {{ site.url }}{{ page.url }})">Copy</button>
+    </div>
+  </div>
+
+  <div class="template-content">
+    <h2>Template Code</h2>
+    {{ content }}
+  </div>
+
+  <footer class="template-footer">
+    <p><a href="{{ '/' | relative_url }}">&larr; Back to all templates</a></p>
+  </footer>
+</article>
+
+<script>
+function copyToClipboard(button) {
+  const text = button.getAttribute('data-text');
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
+  });
+}
+</script>
+
+<style>
+.template {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.template-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.template-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.template-description {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.installation {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.installation h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.code-block {
+  position: relative;
+  background-color: #2d3748;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  overflow-x: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copy-btn:hover {
+  background-color: #2d3748;
+}
+
+.template-content {
+  margin-bottom: 2rem;
+}
+
+.template-content h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.template-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.template-footer a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.template-footer a:hover {
+  text-decoration: underline;
+}
+
+pre {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.4;
+}
+
+code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+p code {
+  background-color: #f1f3f4;
+  color: #d73a49;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+</style>

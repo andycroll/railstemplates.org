@@ -1,0 +1,30 @@
+title: Rails Templates
+description: A collection of simple Rails application templates ready to install via curl
+url: "https://railstemplates.org"
+baseurl: ""
+
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+collections:
+  templates:
+    output: true
+    permalink: /:collection/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "templates"
+    values:
+      layout: "template"
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor/
