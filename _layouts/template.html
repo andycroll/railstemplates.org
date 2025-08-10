@@ -20,15 +20,15 @@ layout: default
     {{ content }}
   </div>
 
+  {% if page.template_source %}
   <div class="template-source">
     <h2>Template Source Code</h2>
     <details>
       <summary>Click to view the full template source</summary>
-      {% assign template_name = page.title | slugify %}
-      {% capture template_source %}{% include_relative {{ template_name }}/template.rb %}{% endcapture %}
-      {% highlight ruby %}{{ template_source }}{% endhighlight %}
+      {% highlight ruby %}{{ page.template_source }}{% endhighlight %}
     </details>
   </div>
+  {% endif %}
 
   <footer class="template-footer">
     <p><a href="{{ '/' | relative_url }}">&larr; Back to all templates</a></p>
