@@ -11,14 +11,23 @@ layout: default
   <div class="installation">
     <h2>Installation</h2>
     <div class="code-block">
-      <code>rails new myapp -m &lt;(curl -s {{ site.url }}{{ page.url }})</code>
-      <button class="copy-btn" onclick="copyToClipboard(this)" data-text="rails new myapp -m <(curl -s {{ site.url }}{{ page.url }})">Copy</button>
+      <code>rails new myapp -m &lt;(curl -s {{ site.url }}/templates/{{ page.title | slugify }}.rb)</code>
+      <button class="copy-btn" onclick="copyToClipboard(this)" data-text="rails new myapp -m <(curl -s {{ site.url }}/templates/{{ page.title | slugify }}.rb)">Copy</button>
     </div>
   </div>
 
   <div class="template-content">
-    <h2>Template Code</h2>
     {{ content }}
+  </div>
+
+  <div class="template-source">
+    <h2>Template Source Code</h2>
+    <details>
+      <summary>Click to view the full template source</summary>
+      {% assign template_name = page.title | slugify %}
+      {% capture template_source %}{% include_relative {{ template_name }}/template.rb %}{% endcapture %}
+      {% highlight ruby %}{{ template_source }}{% endhighlight %}
+    </details>
   </div>
 
   <footer class="template-footer">
@@ -146,5 +155,36 @@ p code {
   color: #d73a49;
   padding: 0.2em 0.4em;
   border-radius: 3px;
+}
+
+.template-source {
+  margin-bottom: 2rem;
+}
+
+.template-source h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.template-source details {
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 1rem;
+  background-color: #f6f8fa;
+}
+
+.template-source summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #0366d6;
+  user-select: none;
+}
+
+.template-source summary:hover {
+  text-decoration: underline;
+}
+
+.template-source details[open] summary {
+  margin-bottom: 1rem;
 }
 </style>

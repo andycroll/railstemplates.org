@@ -12,7 +12,7 @@ Simple, focused Rails application templates that you can install directly with `
 {% for template in site.templates %}
 - **[{{ template.title }}]({{ template.url }})** - {{ template.description }}
   ```bash
-  rails new myapp -m <(curl -s {{ site.url }}{{ template.url }})
+  rails new myapp -m <(curl -s {{ site.url }}/templates/{{ template.title | slugify }}.rb)
   ```
 {% endfor %}
 
@@ -21,7 +21,7 @@ Simple, focused Rails application templates that you can install directly with `
 Each template can be applied to a new Rails application using the `-m` flag with `curl`:
 
 ```bash
-rails new your_app_name -m <(curl -s https://railstemplates.org/templates/template-name/)
+rails new your_app_name -m <(curl -s https://railstemplates.org/templates/template-name.rb)
 ```
 
 ## What are Rails Templates?
