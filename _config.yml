@@ -6,6 +6,11 @@ baseurl: ""
 markdown: kramdown
 highlighter: rouge
 
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    line_numbers: false
+
 plugins:
   - jekyll-feed
   - jekyll-sitemap
@@ -13,7 +18,7 @@ plugins:
 collections:
   templates:
     output: true
-    permalink: /:collection/:name/
+    permalink: /:name/
 
 defaults:
   - scope:

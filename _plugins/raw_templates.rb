@@ -4,15 +4,14 @@ Jekyll::Hooks.register :site, :post_write do |site|
     # Extract template name from path
     template_name = File.dirname(template_file).split('/').last
     
-    # Create destination directory in _site/templates
-    dest_dir = File.join(site.dest, "templates")
-    FileUtils.mkdir_p(dest_dir)
+    # Copy to new URL structure: /{template_name}/template
+    new_dest_dir = File.join(site.dest, template_name)
+    FileUtils.mkdir_p(new_dest_dir)
     
-    # Copy template.rb with .rb extension for Rails to consume
-    dest_file = File.join(dest_dir, "#{template_name}.rb")
-    FileUtils.cp(template_file, dest_file)
+    new_dest_file_clean = File.join(new_dest_dir, "template")
+    FileUtils.cp(template_file, new_dest_file_clean)
     
-    puts "Copied #{template_file} to #{dest_file}"
+    puts "Copied #{template_file} to #{new_dest_file_clean}"
   end
   
   # Copy additional template support files
@@ -24,8 +23,8 @@ Jekyll::Hooks.register :site, :post_write do |site|
     template_name = parts[-2]
     file_name = parts[-1]
     
-    # Create destination directory in _site/templates/template_name
-    dest_dir = File.join(site.dest, "templates", template_name)
+    # Create destination directory in _site/{template_name}
+    dest_dir = File.join(site.dest, template_name)
     FileUtils.mkdir_p(dest_dir)
     
     # Copy support file

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# DaisyUI Local Setup Script
+# Downloads DaisyUI standalone files for Rails projects
+
+TAILWIND_DIR="assets/tailwind"
+DAISYUI_JS_URL="https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js"
+DAISYUI_THEME_URL="https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js"
+
+echo "🌸 Setting up DaisyUI locally using Rails standalone method..."
+
+# Create tailwind directory if it doesn't exist
+mkdir -p "$TAILWIND_DIR"
+
+# Download DaisyUI main plugin
+echo "📥 Downloading DaisyUI plugin..."
+if command -v curl >/dev/null 2>&1; then
+    curl -sLo "$TAILWIND_DIR/daisyui.js" "$DAISYUI_JS_URL"
+    curl -sLo "$TAILWIND_DIR/daisyui-theme.js" "$DAISYUI_THEME_URL"
+else
+    echo "❌ Error: curl not found. Please install curl."
+    exit 1
+fi
+
+# Verify downloads
+if [[ -f "$TAILWIND_DIR/daisyui.js" && -f "$TAILWIND_DIR/daisyui-theme.js" ]]; then
+    main_size=$(wc -c < "$TAILWIND_DIR/daisyui.js" | tr -d ' ')
+    theme_size=$(wc -c < "$TAILWIND_DIR/daisyui-theme.js" | tr -d ' ')
+    
+    if [[ $main_size -gt 1000 && $theme_size -gt 100 ]]; then
+        echo "✅ DaisyUI files downloaded successfully"
+        echo "📁 Main plugin: $TAILWIND_DIR/daisyui.js ($main_size bytes)"
+        echo "📁 Theme plugin: $TAILWIND_DIR/daisyui-theme.js ($theme_size bytes)"
+    else
+        echo "❌ Error: Downloaded files seem too small. Please check your internet connection."
+        exit 1
+    fi
+else
+    echo "❌ Error: Failed to download DaisyUI files"
+    exit 1
+fi
+
+echo "🎨 DaisyUI setup complete!"
+echo "💡 Your Tailwind config should now use: @plugin \"./daisyui.js\""
