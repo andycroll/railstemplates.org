@@ -2,189 +2,103 @@
 layout: default
 ---
 
-<article class="template">
-  <header class="template-header">
-    <h1>{{ page.title }}</h1>
-    <p class="template-description">{{ page.description }}</p>
-  </header>
+<div class="container mx-auto px-4 py-8 max-w-5xl">
+  <!-- Breadcrumbs -->
+  <div class="breadcrumbs text-sm mb-6">
+    <ul>
+      <li><a href="{{ '/' | relative_url }}" class="link link-hover">Home</a></li>
+      <li class="text-base-content/60">{{ page.title }}</li>
+    </ul>
+  </div>
 
-  <div class="installation">
-    <h2>Installation</h2>
-    <div class="code-block">
-      <code>rails new myapp -m &lt;(curl -s {{ site.url }}/templates/{{ page.title | slugify }}.rb)</code>
-      <button class="copy-btn" onclick="copyToClipboard(this)" data-text="rails new myapp -m <(curl -s {{ site.url }}/templates/{{ page.title | slugify }}.rb)">Copy</button>
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <div class="badge badge-primary badge-lg mb-4">Rails Template</div>
+    <h1 class="text-3xl md:text-5xl font-bold mb-4">{{ page.title }}</h1>
+    <p class="text-lg md:text-xl text-base-content/80 max-w-3xl mx-auto leading-relaxed">
+      {{ page.description }}
+    </p>
+  </div>
+
+  <!-- Installation Card -->
+  <div class="card bg-gradient-to-br from-success/10 to-primary/10 border border-success/20 mb-12">
+    <div class="card-body">
+      <h2 class="card-title text-success mb-6">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        Quick Start
+      </h2>
+      
+      <div class="mockup-code bg-neutral text-neutral-content mb-4">
+        <pre data-prefix="$"><code class="text-sm">rails new myapp -m {{ site.url }}/templates/{{ page.title | slugify }}.rb</code></pre>
+      </div>
+      
+      <div class="card-actions justify-between items-center">
+        <div class="text-sm text-base-content/60">Copy and run this command</div>
+        <button class="btn btn-success btn-sm" onclick="copyToClipboard(this)" 
+                data-text="rails new myapp -m {{ site.url }}/templates/{{ page.title | slugify }}.rb">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          Copy
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="template-content">
+  <!-- Content -->
+  <div class="prose prose-lg max-w-none mb-12">
     {{ content }}
   </div>
 
+  <!-- Source Code Section -->
   {% if page.template_source %}
-  <div class="template-source">
-    <h2>Template Source Code</h2>
-    <details>
-      <summary>Click to view the full template source</summary>
-      {% highlight ruby %}{{ page.template_source }}{% endhighlight %}
-    </details>
+  <div class="card bg-base-200 mb-12">
+    <div class="card-body">
+      <div class="collapse collapse-arrow">
+        <input type="checkbox" /> 
+        <div class="collapse-title text-xl font-medium">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+          </svg>
+          Template Source Code
+        </div>
+        <div class="collapse-content"> 
+          <div class="mockup-code text-xs md:text-sm overflow-x-auto">
+            <pre><code>{{ page.template_source }}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   {% endif %}
 
-  <footer class="template-footer">
-    <p><a href="{{ '/' | relative_url }}">&larr; Back to all templates</a></p>
-  </footer>
-</article>
+  <!-- Navigation -->
+  <div class="text-center">
+    <a href="{{ '/' | relative_url }}" class="btn btn-outline btn-lg">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      Back to Templates
+    </a>
+  </div>
+</div>
 
 <script>
 function copyToClipboard(button) {
   const text = button.getAttribute('data-text');
   navigator.clipboard.writeText(text).then(() => {
     const originalText = button.textContent;
-    button.textContent = 'Copied!';
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Copied!';
+    button.classList.remove('btn-success');
+    button.classList.add('btn-info');
     setTimeout(() => {
-      button.textContent = originalText;
+      button.innerHTML = originalHTML;
+      button.classList.remove('btn-info');
+      button.classList.add('btn-success');
     }, 2000);
   });
 }
 </script>
-
-<style>
-.template {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-}
-
-.template-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #eee;
-}
-
-.template-header h1 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-}
-
-.template-description {
-  font-size: 1.1rem;
-  color: #666;
-  margin: 0;
-}
-
-.installation {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
-.installation h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.code-block {
-  position: relative;
-  background-color: #2d3748;
-  color: #e2e8f0;
-  padding: 1rem;
-  border-radius: 6px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  overflow-x: auto;
-}
-
-.copy-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: #4a5568;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.copy-btn:hover {
-  background-color: #2d3748;
-}
-
-.template-content {
-  margin-bottom: 2rem;
-}
-
-.template-content h2 {
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.template-footer {
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-
-.template-footer a {
-  color: #0366d6;
-  text-decoration: none;
-}
-
-.template-footer a:hover {
-  text-decoration: underline;
-}
-
-pre {
-  background-color: #2d3748;
-  color: #e2e8f0;
-  padding: 1rem;
-  border-radius: 6px;
-  overflow-x: auto;
-  line-height: 1.4;
-}
-
-code {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
-}
-
-p code {
-  background-color: #f1f3f4;
-  color: #d73a49;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-}
-
-.template-source {
-  margin-bottom: 2rem;
-}
-
-.template-source h2 {
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.template-source details {
-  border: 1px solid #e1e4e8;
-  border-radius: 6px;
-  padding: 1rem;
-  background-color: #f6f8fa;
-}
-
-.template-source summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: #0366d6;
-  user-select: none;
-}
-
-.template-source summary:hover {
-  text-decoration: underline;
-}
-
-.template-source details[open] summary {
-  margin-bottom: 1rem;
-}
-</style>
