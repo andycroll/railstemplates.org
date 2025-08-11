@@ -36,3 +36,5 @@ exclude:
   - Gemfile.lock
   - README.md
   - vendor/
+  - bin/
+  - assets/tailwind/
