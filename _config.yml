@@ -38,3 +38,4 @@ exclude:
   - vendor/
   - bin/
   - assets/tailwind/
+  - .agent-os/
