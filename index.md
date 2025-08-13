@@ -3,24 +3,9 @@ layout: default
 title: Rails Templates
 ---
 
-<div class="hero bg-gradient-to-r from-primary to-secondary text-primary-content py-16 md:py-24">
-  <div class="hero-content text-center px-4">
-    <div class="max-w-2xl">
-      <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">{{ page.title }}</h1>
-      <p class="text-lg md:text-xl mb-6 md:mb-8 opacity-90">{{ site.description }}</p>
-      <a href="#templates" class="btn btn-lg btn-accent shadow-lg hover:shadow-xl transition-shadow">
-        View Templates
-        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-        </svg>
-      </a>
-    </div>
-  </div>
-</div>
-
 <section id="templates" class="py-16 px-4">
   <div class="max-w-6xl mx-auto">
-    <h2 class="text-3xl font-bold text-center mb-12 text-base-content">Available Templates</h2>
+    <h2 class="text-3xl font-bold mb-12 text-base-content">Available Templates</h2>
     
     <div class="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {% for template in site.templates %}
@@ -58,23 +43,23 @@ title: Rails Templates
 
 <section class="py-16 bg-base-200">
   <div class="max-w-4xl mx-auto px-4">
-    <div class="text-center mb-12">
+    <div class="mb-12">
       <h2 class="text-3xl font-bold mb-4 text-base-content">How to Use</h2>
       <p class="text-lg text-base-content/80">
         Apply any template to a new Rails application using the <code class="badge badge-outline">-m</code> flag
       </p>
     </div>
     
-    <div class="mockup-code bg-neutral text-neutral-content max-w-2xl mx-auto">
+    <div class="mockup-code bg-neutral text-neutral-content max-w-2xl">
       <pre data-prefix="$"><code>rails new your_app_name -m https://railstemplates.org/templates/template-name.rb</code></pre>
     </div>
   </div>
 </section>
 
 <section class="py-16">
-  <div class="max-w-4xl mx-auto px-4 text-center">
+  <div class="max-w-4xl mx-auto px-4">
     <h2 class="text-3xl font-bold mb-6 text-base-content">What are Rails Templates?</h2>
-    <p class="text-lg text-base-content/80 mb-8 max-w-3xl mx-auto">
+    <p class="text-lg text-base-content/80 mb-8 max-w-3xl">
       Rails application templates are Ruby scripts that run during the <code class="badge badge-outline">rails new</code> 
       command to customize your new application. They can add gems, generate files, run commands, and set up your 
       application exactly how you want it.
