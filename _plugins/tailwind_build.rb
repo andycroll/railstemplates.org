@@ -1,4 +1,7 @@
+# Build CSS before Jekyll processes files
 Jekyll::Hooks.register :site, :after_init do |site|
+  Jekyll.logger.info "Tailwind:", "Initializing CSS build..."
+  
   if Jekyll.env == 'development'
     # Start tailwindcss in watch mode for development
     Thread.new do
@@ -19,6 +22,8 @@ Jekyll::Hooks.register :site, :after_init do |site|
     
     if success
       Jekyll.logger.info "Tailwind:", "CSS built successfully"
+      # Force Jekyll to recognize the new file
+      site.static_files << Jekyll::StaticFile.new(site, site.source, "assets/css", "main.css")
     else
       Jekyll.logger.error "Tailwind:", "Failed to build CSS"
       exit 1
