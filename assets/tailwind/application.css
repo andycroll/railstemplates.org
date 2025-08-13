@@ -8,6 +8,12 @@
 @plugin "./daisyui.js";
 @plugin "@tailwindcss/typography";
 
+/* Override DaisyUI default primary color with deeper red */
+:root {
+  --color-primary: oklch(45% 0.24 25);
+  --color-primary-content: oklch(95% 0 0);
+}
+
 /* Optional for custom themes – Docs: https://daisyui.com/docs/themes/#how-to-add-a-new-custom-theme */
 @plugin "./daisyui-theme.js"{
   /* custom theme here */
