@@ -11,12 +11,12 @@
 /* Abyss theme */
 :root {
   color-scheme: dark;
-  --color-base-100: oklch(20% 0.08 209);
-  --color-base-200: oklch(15% 0.08 209);
-  --color-base-300: oklch(10% 0.08 209);
-  --color-base-content: oklch(90% 0.076 70.697);
-  --color-primary: oklch(40% 0.18 25);
-  --color-primary-content: oklch(95% 0 0);
+  --color-base-100: oklch(25% 0.092 26.042);
+  --color-base-200: oklch(39% 0.141 25.723);
+  --color-base-300: oklch(44% 0.177 26.899);
+  --color-base-content: oklch(97% 0.013 17.38);
+  --color-primary: oklch(50% 0.213 27.518);
+  --color-primary-content: oklch(98% 0.003 247.858);
   --color-secondary: oklch(83.27% 0.0764 298.3);
   --color-secondary-content: oklch(43.27% 0.0764 298.3);
   --color-accent: oklch(43% 0 0);

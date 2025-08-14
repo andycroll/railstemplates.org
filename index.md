@@ -3,12 +3,41 @@ layout: default
 title: Rails Templates
 ---
 
-<section id="templates" class="py-16 px-4">
-  <div class="max-w-6xl mx-auto">
-    <h2 class="text-3xl font-bold mb-12 text-base-content">Available Templates</h2>
+<section class="py-8 px-4">
+  <div>
+    <p class="text-lg text-base-content/80 mb-8">
+      Rails application templates are Ruby scripts that run during the <code class="badge badge-outline">rails new</code> 
+      command to customize your new application. They can add gems, generate files, run commands, and set up your 
+      application exactly how you want it. You can also apply templates to existing Rails applications using 
+      <code class="badge badge-outline">rails app:template</code>.
+    </p>
     
-    <div class="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {% for template in site.templates %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div>
+        <h3 class="text-xl font-semibold mb-3 text-base-content">For new applications:</h3>
+        <div class="mockup-code bg-neutral text-neutral-content">
+          <pre data-prefix="$"><code>rails new your_app_name -m https://railstemplates.org/template-name.rb</code></pre>
+        </div>
+      </div>
+      
+      <div>
+        <h3 class="text-xl font-semibold mb-3 text-base-content">For existing applications:</h3>
+        <div class="mockup-code bg-neutral text-neutral-content">
+          <pre data-prefix="$"><code>rails app:template LOCATION=https://railstemplates.org/template-name.rb</code></pre>
+        </div>
+      </div>
+    </div>
+    
+    <a href="https://guides.rubyonrails.org/rails_application_templates.html" 
+       class="btn btn-outline btn-lg" target="_blank" rel="noopener">
+      Read the Official Guide
+    </a>
+  </div>
+</section>
+
+<section id="templates" class="py-8 px-4">  
+  <div class="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    {% for template in site.templates %}
       <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
         <div class="card-body p-4 md:p-6">
           <h3 class="card-title text-primary mb-3 text-lg md:text-xl">
@@ -36,40 +65,11 @@ title: Rails Templates
           </div>
         </div>
       </div>
-      {% endfor %}
-    </div>
+    {% endfor %}
   </div>
 </section>
 
-<section class="py-16 bg-base-200">
-  <div class="max-w-4xl mx-auto px-4">
-    <div class="mb-12">
-      <h2 class="text-3xl font-bold mb-4 text-base-content">How to Use</h2>
-      <p class="text-lg text-base-content/80">
-        Apply any template to a new Rails application using the <code class="badge badge-outline">-m</code> flag
-      </p>
-    </div>
-    
-    <div class="mockup-code bg-neutral text-neutral-content max-w-2xl">
-      <pre data-prefix="$"><code>rails new your_app_name -m https://railstemplates.org/templates/template-name.rb</code></pre>
-    </div>
-  </div>
-</section>
 
-<section class="py-16">
-  <div class="max-w-4xl mx-auto px-4">
-    <h2 class="text-3xl font-bold mb-6 text-base-content">What are Rails Templates?</h2>
-    <p class="text-lg text-base-content/80 mb-8 max-w-3xl">
-      Rails application templates are Ruby scripts that run during the <code class="badge badge-outline">rails new</code> 
-      command to customize your new application. They can add gems, generate files, run commands, and set up your 
-      application exactly how you want it.
-    </p>
-    <a href="https://guides.rubyonrails.org/rails_application_templates.html" 
-       class="btn btn-outline btn-lg" target="_blank" rel="noopener">
-      Read the Official Guide
-    </a>
-  </div>
-</section>
 
 <script>
 function copyToClipboard(button) {

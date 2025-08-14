@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<div class="container mx-auto px-4 py-8 max-w-5xl">
+<div class="px-4 py-8">
   <!-- Breadcrumbs -->
   <div class="breadcrumbs text-sm mb-6">
     <ul>
@@ -13,17 +13,16 @@ layout: default
 
   <!-- Header -->
   <div class="mb-12">
-    <div class="badge badge-primary badge-lg mb-4">Rails Template</div>
     <h1 class="text-3xl md:text-5xl font-bold mb-4">{{ page.title }}</h1>
-    <p class="text-lg md:text-xl text-base-content/80 max-w-3xl leading-relaxed">
+    <p class="text-lg md:text-xl text-base-content/80 leading-relaxed">
       {{ page.description }}
     </p>
   </div>
 
   <!-- Installation Card -->
-  <div class="card bg-gradient-to-br from-success/10 to-primary/10 border border-success/20 mb-12">
-    <div class="card-body">
-      <h2 class="card-title text-success mb-6">
+  <div class="card bg-base-200 mb-12">
+    <div class="card-body -mx-8">
+      <h2 class="card-title mb-6">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
         </svg>
@@ -36,7 +35,7 @@ layout: default
       
       <div class="card-actions justify-between items-center">
         <div class="text-sm text-base-content/60">Copy and run this command</div>
-        <button class="btn btn-success btn-sm" onclick="copyToClipboard(this)" 
+        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(this)" 
                 data-text="rails new myapp -m {{ site.url }}/{{ page.title | slugify }}/template">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -48,7 +47,7 @@ layout: default
   </div>
 
   <!-- Content -->
-  <div class="prose prose-lg prose-slate max-w-none mb-12 
+  <div class="prose prose-lg prose-slate mb-12 
               prose-headings:text-base-content prose-p:text-base-content/90
               prose-strong:text-base-content prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-code:text-accent prose-code:bg-accent/10 prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:font-medium
@@ -97,12 +96,12 @@ function copyToClipboard(button) {
     const originalText = button.textContent;
     const originalHTML = button.innerHTML;
     button.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Copied!';
-    button.classList.remove('btn-success');
+    button.classList.remove('btn-primary');
     button.classList.add('btn-info');
     setTimeout(() => {
       button.innerHTML = originalHTML;
       button.classList.remove('btn-info');
-      button.classList.add('btn-success');
+      button.classList.add('btn-primary');
     }, 2000);
   });
 }
