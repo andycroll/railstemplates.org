@@ -19,29 +19,57 @@ layout: default
     </p>
   </div>
 
-  <!-- Installation Card -->
-  <div class="card bg-base-200 mb-12">
-    <div class="card-body -mx-8">
-      <h2 class="card-title mb-6">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-        </svg>
-        Quick Start
-      </h2>
-      
-      <div class="mockup-code bg-neutral text-neutral-content mb-4">
-        <pre data-prefix="$"><code class="text-sm">rails new myapp -m {{ site.url }}/{{ page.title | slugify }}/template</code></pre>
-      </div>
-      
-      <div class="card-actions justify-between items-center">
-        <div class="text-sm text-base-content/60">Copy and run this command</div>
-        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(this)" 
-                data-text="rails new myapp -m {{ site.url }}/{{ page.title | slugify }}/template">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+  <!-- Installation Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+    <div class="card bg-base-200">
+      <div class="card-body">
+        <h2 class="card-title mb-6">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
           </svg>
-          Copy
-        </button>
+          Existing Applications
+        </h2>
+        
+        <div class="mockup-code bg-neutral text-neutral-content mb-4">
+          <pre data-prefix="$"><code class="text-sm">rails app:template LOCATION={{ site.url }}/{{ page.title | slugify }}/template</code></pre>
+        </div>
+        
+        <div class="card-actions justify-between items-center">
+          <div class="text-sm text-base-content/60">Copy and run this command</div>
+          <button class="btn btn-primary btn-sm" onclick="copyToClipboard(this)" 
+                  data-text="rails app:template LOCATION={{ site.url }}/{{ page.title | slugify }}/template">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-200">
+      <div class="card-body">
+        <h2 class="card-title mb-6">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          New Apps
+        </h2>
+        
+        <div class="mockup-code bg-neutral text-neutral-content mb-4">
+          <pre data-prefix="$"><code class="text-sm">rails new myapp -m {{ site.url }}/{{ page.title | slugify }}/template</code></pre>
+        </div>
+        
+        <div class="card-actions justify-between items-center">
+          <div class="text-sm text-base-content/60">Copy and run this command</div>
+          <button class="btn btn-primary btn-sm" onclick="copyToClipboard(this)" 
+                  data-text="rails new myapp -m {{ site.url }}/{{ page.title | slugify }}/template">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
       </div>
     </div>
   </div>
