@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 
 # DaisyUI Rails Application Template
-# Usage: rails new myapp -m <(curl -s https://railstemplates.org/templates/daisyui.rb)
+# Usage: rails new myapp -m https://railstemplates.org/daisyui/template
+# Usage: rails app:template LOCATION=https://railstemplates.org/daisyui/template
 
+say "railstmplates.org"
 say "🌼 Installing DaisyUI for Rails...", :green
 
 # Check if Tailwind CSS is installed
@@ -49,6 +51,7 @@ def create_daisyui_rake_task
     namespace :daisyui do
       desc "Install or update DaisyUI plugin"
       task :install do
+        puts "railstemplates.org"
         puts "🌼 Installing DaisyUI..."
 
         # Ensure directory exists
@@ -73,15 +76,17 @@ def create_daisyui_rake_task
 
       desc "Download DaisyUI plugin from CDN"
       task :download do
+        puts "railstemplates.org"
         puts "📥 Downloading DaisyUI plugin..."
+
         FileUtils.mkdir_p("app/assets/tailwind")
         download_daisyui_files
       end
 
       desc "Show DaisyUI installation status"
       task :status do
+        puts "railstemplates.org"
         puts "🌼 DaisyUI Status"
-        puts "=" * 30
 
         # Check plugin file
         plugin_path = "app/assets/tailwind/daisyui.js"
@@ -104,6 +109,7 @@ def create_daisyui_rake_task
 
       desc "Install DaisyUI form builder"
       task :form_builder do
+        puts "railstemplates.org"
         puts "📝 Installing DaisyUI form builder..."
         
         # Ensure app/forms directory exists
@@ -172,6 +178,11 @@ def create_daisyui_rake_task
           content = fetch_with_redirects(uri)
           File.write(plugin_path, content, mode: "wb")
           puts "✅ Downloaded DaisyUI plugin (\#{File.size(plugin_path)} bytes)"
+          puts "📥 Downloading DaisyUI theme plugin..."
+          uri = URI("https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js")
+          content = fetch_with_redirects(uri)
+          File.write(plugin_path, content, mode: "wb")
+          puts "✅ Downloaded DaisyUI theme plugin (\#{File.size(plugin_path)} bytes)"
         rescue Net::HTTPError, Timeout::Error, SocketError => e
           puts "❌ Download failed: \#{e.message}"
           puts "   Manual download: https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js"
