@@ -14,8 +14,8 @@ Jekyll::Hooks.register :site, :post_write do |site|
     puts "Copied #{template_file} to #{new_dest_file_clean}"
   end
   
-  # Copy additional template support files
-  Dir.glob("_templates/*/*.rb").each do |support_file|
+  # Copy additional template support files (.rb and .rake files)
+  Dir.glob("_templates/*/*.{rb,rake}").each do |support_file|
     next if support_file.end_with?("template.rb") # Skip main template files
     
     # Extract template name and file name
