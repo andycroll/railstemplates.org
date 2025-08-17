@@ -16,14 +16,14 @@ title: Rails Templates
       <div>
         <h3 class="text-xl font-semibold mb-3 text-base-content">For new applications:</h3>
         <div class="mockup-code bg-neutral text-neutral-content">
-          <pre data-prefix="$"><code>rails new your_app_name -m https://railstemplates.org/template-name.rb</code></pre>
+          <pre data-prefix="$"><code>rails new myapp -m https://railstemplates.org/name/template</code></pre>
         </div>
       </div>
       
       <div>
         <h3 class="text-xl font-semibold mb-3 text-base-content">For existing applications:</h3>
         <div class="mockup-code bg-neutral text-neutral-content">
-          <pre data-prefix="$"><code>rails app:template LOCATION=https://railstemplates.org/template-name.rb</code></pre>
+          <pre data-prefix="$"><code>rails app:template LOCATION=https://railstemplates.org/name/template</code></pre>
         </div>
       </div>
     </div>
@@ -47,19 +47,10 @@ title: Rails Templates
           
           <div class="card-actions">
             <div class="w-full space-y-3">
-              <div class="mockup-code bg-neutral text-neutral-content text-xs overflow-x-auto">
-                <pre class="px-2 md:px-4"><code>rails new myapp -m {{ site.url }}/templates/{{ template.title | slugify }}.rb</code></pre>
-              </div>
               <div class="flex flex-col sm:flex-row gap-2">
                 <a href="{{ template.url }}" class="btn btn-primary btn-sm flex-1 text-xs md:text-sm">
                   Learn More
                 </a>
-                <button class="btn btn-outline btn-sm text-xs md:text-sm" onclick="copyToClipboard(this)" data-text="rails new myapp -m {{ site.url }}/templates/{{ template.title | slugify }}.rb">
-                  <svg class="w-3 h-3 md:w-4 md:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                  </svg>
-                  Copy
-                </button>
               </div>
             </div>
           </div>
