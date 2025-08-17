@@ -127,6 +127,20 @@ def create_daisyui_rake_task
           # Write the form builder file
           File.write(form_builder_path, form_builder_content)
           puts "✅ Downloaded and saved to \#{form_builder_path}"
+
+          lines = content.lines
+          insert_index = lines.rindex { |line| line.strip.start_with?("@source") } ||
+            lines.find_index { |line| line.strip.start_with?("@import") }
+
+          new_content = <<~CSS
+            @source "../../../app/forms/**/*.rb";
+          CSS
+
+          if insert_index
+            lines.insert(insert_index + 1, new_content)
+            File.write(config_path, lines.join)
+            puts "✅ Updated Tailwind v4 config to include formbuilder"
+          end
         rescue StandardError => e
           puts "❌ Failed to download form builder: \#{e.message}"
           puts "   You can manually download from: \#{form_builder_url}"
@@ -229,25 +243,27 @@ def create_daisyui_rake_task
           insert_index = lines.rindex { |line| line.strip.start_with?("@source") } ||
             lines.find_index { |line| line.strip.start_with?("@import") }
 
-          if insert_index
-            lines.insert(insert_index + 1, "\\n@plugin \\"./daisyui.js\\";\\n")
-            File.write(config_path, lines.join)
-            puts "✅ Updated Tailwind v4 config"
-          end
-        else
-          # Tailwind v3 - convert to v4
           new_content = <<~CSS
-            @import "tailwindcss" source(none);
             @source "../../../public/*.html";
             @source "../../../app/helpers/**/*.rb";
             @source "../../../app/javascript/**/*.js";
             @source "../../../app/views/**/*";
 
             @plugin "./daisyui.js";
+
+            /* Optional for custom themes – Docs: https://daisyui.com/docs/themes/#how-to-add-a-new-custom-theme */
+            @plugin "./daisyui-theme.js"{
+              /* custom theme here */
+            }
           CSS
 
-          File.write(config_path, new_content)
-          puts "✅ Converted to Tailwind v4 with DaisyUI"
+          if insert_index
+            lines.insert(insert_index + 1, new_content)
+            File.write(config_path, lines.join)
+            puts "✅ Updated Tailwind v4 config"
+          end
+        else
+          puts "❌ Tailwind config error. Maybe not v4?"
         end
       end
     end
