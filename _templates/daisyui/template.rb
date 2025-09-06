@@ -20,7 +20,7 @@ unless tailwind_installed?
   gem "tailwindcss-rails"
 
   after_bundle do
-    generate "tailwindcss:install"
+    rails_command "tailwindcss:install"
     say "✓ Tailwind CSS installed", :green
   end
 end
