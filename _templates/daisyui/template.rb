@@ -51,7 +51,7 @@ def create_daisyui_rake_task
       
       # Run the install task
       say "🚀 Running DaisyUI installation...", :blue
-      run "bin/rails daisyui:install"
+      rails_command "daisyui:install"
     else
       say "❌ Failed to download rake tasks (HTTP #{response.code})", :red
       say "   You can manually download from: #{rake_url}", :yellow
