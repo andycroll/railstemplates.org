@@ -70,7 +70,7 @@ namespace :daisyui do
     FileUtils.mkdir_p("app/forms")
 
     # Download the form builder file
-    form_builder_url = "https://railstemplates.org/daisyui/daisy_ui_form_builder"
+    form_builder_url = "https://railstemplates.org/daisyui/daisy_ui_form_builder.rb"
     form_builder_path = "app/forms/daisy_ui_form_builder.rb"
     config_path = "app/assets/tailwind/application.css"
 
