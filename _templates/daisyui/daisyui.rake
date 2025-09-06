@@ -61,6 +61,26 @@ namespace :daisyui do
     puts "\nTo install/update: rake daisyui:install"
   end
 
+  desc "Upgrade DaisyUI by running the latest template"
+  task :upgrade_self do
+    puts "railstemplates.org"
+    puts "🔄 Upgrading DaisyUI by running the latest template..."
+
+    template_url = "https://railstemplates.org/daisyui/template"
+    
+    puts "📥 Running Rails app template from #{template_url}..."
+    system("bin/rails app:template LOCATION=#{template_url}")
+    
+    if $?.success?
+      puts "✅ Successfully upgraded DaisyUI"
+      puts "   Run 'rake -T daisyui' to see all available tasks"
+    else
+      puts "❌ Failed to run template"
+      puts "   You can manually run: bin/rails app:template LOCATION=#{template_url}"
+      exit 1
+    end
+  end
+
   desc "Install DaisyUI form builder"
   task :form_builder do
     puts "railstemplates.org"
