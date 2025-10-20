@@ -21,12 +21,12 @@ This template configures SimpleCov for Rails applications using Minitest, with p
 
 ### For a new Rails application:
 ```bash
-rails new myapp -m https://railstemplates.org/simplecov_rails_minitest/template
+rails new myapp -m https://railstemplates.org/simplecov-rails/template.rb
 ```
 
 ### For an existing Rails application:
 ```bash
-rails app:template LOCATION=https://railstemplates.org/simplecov_rails_minitest/template
+rails app:template LOCATION=https://railstemplates.org/simplecov-rails/template.rb
 ```
 
 ## Running Tests with Coverage
