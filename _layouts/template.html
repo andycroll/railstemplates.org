@@ -75,11 +75,9 @@ layout: default
   </div>
 
   <!-- Content -->
-  <div class="prose prose-lg prose-slate mb-12 
+  <div class="template-content prose prose-lg mb-12
               prose-headings:text-base-content prose-p:text-base-content/90
               prose-strong:text-base-content prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-              prose-code:text-accent prose-code:bg-accent/10 prose-code:px-2 prose-code:py-1 prose-code:rounded-md prose-code:font-medium
-              prose-pre:!bg-transparent prose-pre:!text-inherit prose-pre:!border-none prose-pre:!shadow-none prose-pre:!p-0
               prose-ul:text-base-content/90 prose-li:text-base-content/90">
     {{ content }}
   </div>
@@ -89,17 +87,15 @@ layout: default
   <div class="card bg-base-200 mb-12">
     <div class="card-body">
       <div class="collapse collapse-arrow">
-        <input type="checkbox" /> 
+        <input type="checkbox" />
         <div class="collapse-title text-xl font-medium">
           <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
           </svg>
           Template Source Code
         </div>
-        <div class="collapse-content"> 
-          <div class="mockup-code text-xs md:text-sm overflow-x-auto">
-            <pre><code>{{ page.template_source }}</code></pre>
-          </div>
+        <div class="collapse-content">
+          <pre class="bg-neutral text-neutral-content text-xs md:text-sm p-4 rounded-lg overflow-x-auto"><code>{{ page.template_source }}</code></pre>
         </div>
       </div>
     </div>
@@ -116,6 +112,47 @@ layout: default
     </a>
   </div>
 </div>
+
+<style>
+  /* Block code styling */
+  .template-content .highlight {
+    background-color: oklch(var(--n));
+    color: oklch(var(--nc));
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+  .template-content .highlight pre {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+  }
+  .template-content .highlight code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-weight: normal;
+    font-size: 0.875rem;
+  }
+
+  /* Inline code styling */
+  .template-content code.highlighter-rouge {
+    color: oklch(var(--a));
+    background-color: oklch(var(--a) / 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.9em;
+  }
+
+  /* Source code section */
+  .collapse-content pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+</style>
 
 <script>
 function copyToClipboard(button) {

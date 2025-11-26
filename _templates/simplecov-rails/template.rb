@@ -18,7 +18,7 @@ after_bundle do
   # Configure SimpleCov in test_helper.rb
   inject_into_file "test/test_helper.rb", before: "ENV[\"RAILS_ENV\"] ||= \"test\"" do
     <<~'RUBY'
-      if ENV["COVERAGE"]
+      if ENV["CI"] || ENV["COVERAGE"]
         require "simplecov"
         SimpleCov.start "rails" do
           # Add custom groups
@@ -44,7 +44,7 @@ after_bundle do
     inject_into_file "test/test_helper.rb", after: "parallelize(workers: :number_of_processors)\n" do
       <<~'RUBY'
 
-      if ENV["COVERAGE"]
+      if ENV["CI"] || ENV["COVERAGE"]
         parallelize_setup do |worker|
           SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
         end
