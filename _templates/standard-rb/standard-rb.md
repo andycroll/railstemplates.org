@@ -21,12 +21,23 @@ Auto-fix your codebase:
 
 ## Configuration
 
-The generated `.rubocop.yml` is intentionally minimal:
+The generated `.rubocop.yml` uses the [recommended StandardRB configuration](https://github.com/standardrb/standard?tab=readme-ov-file#running-standards-rules-via-rubocop):
 
-    require: standard
+    require:
+      - standard
+
+    plugins:
+      - standard-custom
+      - standard-performance
+      - rubocop-performance
 
     inherit_gem:
       standard: config/base.yml
+      standard-custom: config/base.yml
+      standard-performance: config/base.yml
+
+    AllCops:
+      NewCops: enable
 
 You can extend this with additional RuboCop plugins (rubocop-rails, rubocop-rspec, etc.) as needed.
 
