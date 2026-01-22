@@ -59,12 +59,16 @@ after_bundle do
   end
 
   # Add .gitignore entry for coverage reports
-  append_to_file ".gitignore" do
-    <<~TEXT
+  if File.exist?(".gitignore")
+    append_to_file ".gitignore" do
+      <<~TEXT
 
-      # SimpleCov coverage reports
-      /coverage/
-    TEXT
+        # SimpleCov coverage reports
+        /coverage/
+      TEXT
+    end
+  else
+    say "⚠ No .gitignore found, skipping coverage entry", :yellow
   end
 
   say "\n🎉 Setup complete! SimpleCov is ready to use.", :green

@@ -77,27 +77,39 @@ after_bundle do
 end
 
 def download_coverage_script
-  require 'net/http'
-  require 'uri'
-
-  script_url = "https://railstemplates.org/coverage-comments/analyze_coverage.rb"
+  base_url = ENV.fetch("TEMPLATES_BASE_URL", "https://railstemplates.org")
+  script_url = "#{base_url}/coverage-comments/analyze_coverage.rb"
   script_path = ".github/scripts/analyze_coverage.rb"
 
   begin
-    uri = URI(script_url)
-    response = Net::HTTP.get_response(uri)
+    content = fetch_file(script_url)
 
-    if response.code == "200"
-      create_file script_path, response.body, skip: true
+    if content
+      create_file script_path, content, skip: true
       chmod script_path, 0755
       say "Downloaded coverage analysis script", :green
     else
-      say "Failed to download script (HTTP #{response.code})", :red
+      say "Failed to download script", :red
       say "You can manually download from: #{script_url}", :yellow
     end
   rescue => e
     say "Error downloading script: #{e.message}", :red
     say "You can manually download from: #{script_url}", :yellow
+  end
+end
+
+def fetch_file(url)
+  if url.start_with?("file://")
+    # Read local file
+    path = url.sub("file://", "")
+    File.read(path) if File.exist?(path)
+  else
+    # Fetch from HTTP
+    require 'net/http'
+    require 'uri'
+    uri = URI(url)
+    response = Net::HTTP.get_response(uri)
+    response.body if response.code == "200"
   end
 end
 
