@@ -33,27 +33,24 @@ after_bundle do
 end
 
 def create_daisyui_rake_task
-  require 'net/http'
-  require 'uri'
-  
-  rake_url = "https://railstemplates.org/daisyui/daisyui.rake"
+  base_url = ENV.fetch("TEMPLATES_BASE_URL", "https://railstemplates.org")
+  rake_url = "#{base_url}/daisyui/daisyui.rake"
   rake_path = "lib/tasks/daisyui.rake"
-  
+
   say "📥 Downloading DaisyUI rake tasks...", :blue
-  
+
   begin
-    uri = URI(rake_url)
-    response = Net::HTTP.get_response(uri)
-    
-    if response.code == "200"
-      create_file rake_path, response.body, skip: true
+    content = fetch_file(rake_url)
+
+    if content
+      create_file rake_path, content, skip: true
       say "✅ Downloaded DaisyUI rake tasks to #{rake_path}", :green
-      
+
       # Run the install task
       say "🚀 Running DaisyUI installation...", :blue
       rails_command "daisyui:install"
     else
-      say "❌ Failed to download rake tasks (HTTP #{response.code})", :red
+      say "❌ Failed to download rake tasks", :red
       say "   You can manually download from: #{rake_url}", :yellow
       say "   And save it to: #{rake_path}", :yellow
     end
@@ -61,5 +58,20 @@ def create_daisyui_rake_task
     say "❌ Error downloading rake tasks: #{e.message}", :red
     say "   You can manually download from: #{rake_url}", :yellow
     say "   And save it to: #{rake_path}", :yellow
+  end
+end
+
+def fetch_file(url)
+  if url.start_with?("file://")
+    # Read local file
+    path = url.sub("file://", "")
+    File.read(path) if File.exist?(path)
+  else
+    # Fetch from HTTP
+    require 'net/http'
+    require 'uri'
+    uri = URI(url)
+    response = Net::HTTP.get_response(uri)
+    response.body if response.code == "200"
   end
 end

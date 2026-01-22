@@ -27,3 +27,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test artifacts
+tmp/test_apps/
