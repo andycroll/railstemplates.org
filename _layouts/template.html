@@ -116,8 +116,8 @@ layout: default
 <style>
   /* Block code styling */
   .template-content .highlight {
-    background-color: oklch(var(--n));
-    color: oklch(var(--nc));
+    background-color: var(--color-neutral);
+    color: var(--color-neutral-content);
     border-radius: 0.5rem;
     padding: 1rem;
     overflow-x: auto;
@@ -138,8 +138,8 @@ layout: default
 
   /* Inline code styling */
   .template-content code.highlighter-rouge {
-    color: oklch(var(--a));
-    background-color: oklch(var(--a) / 0.1);
+    color: var(--color-accent);
+    background-color: color-mix(in oklch, var(--color-accent) 10%, transparent);
     padding: 0.25rem 0.5rem;
     border-radius: 0.375rem;
     font-weight: 500;
