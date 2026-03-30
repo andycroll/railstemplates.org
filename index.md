@@ -3,7 +3,7 @@ layout: default
 title: Rails Templates
 ---
 
-<section class="py-8 px-4">
+<section class="py-8">
   <div>
     <p class="text-lg text-base-content/80 mb-8">
       Rails application templates are Ruby scripts that run during the <code class="badge badge-outline">rails new</code> 
@@ -35,7 +35,7 @@ title: Rails Templates
   </div>
 </section>
 
-<section id="templates" class="py-8 px-4">  
+<section id="templates" class="py-8">
   <div class="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     {% for template in site.templates %}
       <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
