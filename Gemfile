@@ -3,6 +3,7 @@ source "https://rubygems.org"
 ruby file: ".ruby-version"
 
 gem "jekyll", "~> 4.3"
+gem "logger"
 gem "tailwindcss-ruby", "~> 4.1"
 
 group :jekyll_plugins do
