@@ -7,9 +7,15 @@
 say "railstemplates.org"
 say "📊 Installing SimpleCov with Minitest parallelism support...", :green
 
-# Add SimpleCov to Gemfile
-gem_group :test do
-  gem "simplecov", require: false
+# Add SimpleCov to Gemfile (inject into existing test group if present)
+if File.read("Gemfile").match?(/^group :test do/)
+  inject_into_file "Gemfile", after: "group :test do\n" do
+    "  gem \"simplecov\", require: false\n"
+  end
+else
+  gem_group :test do
+    gem "simplecov", require: false
+  end
 end
 
 after_bundle do
@@ -42,18 +48,18 @@ after_bundle do
   if File.read("test/test_helper.rb").include?("parallelize(workers: :number_of_processors)")
     say "⚙️  Adding Minitest parallelization support...", :blue
     inject_into_file "test/test_helper.rb", after: "parallelize(workers: :number_of_processors)\n" do
-      <<~'RUBY'
+<<'RUBY'
 
-      if ENV["CI"] || ENV["COVERAGE"]
-        parallelize_setup do |worker|
-          SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
-        end
-
-        parallelize_teardown do |worker|
-          SimpleCov.result
-        end
+    if ENV["CI"] || ENV["COVERAGE"]
+      parallelize_setup do |worker|
+        SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
       end
-    RUBY
+
+      parallelize_teardown do |worker|
+        SimpleCov.result
+      end
+    end
+RUBY
     end
     say "✓ Minitest parallelization support added", :green
   end
