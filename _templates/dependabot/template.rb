@@ -7,6 +7,12 @@
 say "railstemplates.org"
 say "🤖 Configuring Dependabot with automerge...", :green
 
+if File.exist?(".github/dependabot.yml")
+  say "⚠️  .github/dependabot.yml already exists, skipping.", :yellow
+  say "Remove it first if you want to regenerate it.", :yellow
+  return
+end
+
 # Build dependabot.yml content
 dependabot_yml = <<~YAML
   version: 2
