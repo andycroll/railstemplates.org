@@ -39,3 +39,6 @@ exclude:
   - bin/
   - assets/tailwind/
   - .agent-os/
+  - docs/
+  - test/
+  - tmp/
