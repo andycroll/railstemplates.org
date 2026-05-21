@@ -172,6 +172,66 @@ class TemplatesTest < Minitest::Test
     assert_rails_boots
   end
 
+  def test_appsignal_broadcast
+    create_rails_app
+    apply_template("appsignal-broadcast")
+
+    gemfile = File.read("#{@app_dir}/Gemfile")
+    assert_match(/gem "appsignal"/, gemfile)
+    assert_equal 1, gemfile.scan(/gem "appsignal"/).count,
+      "Expected exactly one appsignal gem entry in Gemfile"
+
+    appsignal_rb_path = "#{@app_dir}/config/appsignal.rb"
+    assert File.exist?(appsignal_rb_path), "config/appsignal.rb missing"
+    appsignal_rb = File.read(appsignal_rb_path)
+    assert_match(/APPSIGNAL_FILTER_KEYS\s*=/, appsignal_rb)
+    assert_match(/Appsignal\.configure do \|config\|/, appsignal_rb)
+    assert_match(/activate_if_environment/, appsignal_rb)
+    assert_match(/filter_parameters\s*=\s*APPSIGNAL_FILTER_KEYS/, appsignal_rb)
+    assert_match(/filter_session_data\s*=\s*APPSIGNAL_FILTER_KEYS/, appsignal_rb)
+    assert_match(/Rails::HealthController#show/, appsignal_rb)
+
+    schema_filter_path = "#{@app_dir}/config/initializers/appsignal_filter_schema_events.rb"
+    assert File.exist?(schema_filter_path), "appsignal_filter_schema_events.rb missing"
+    schema_filter = File.read(schema_filter_path)
+    assert_match(/module AppsignalSchemaEventFilter/, schema_filter)
+    assert_match(/sql\.active_record/, schema_filter)
+    assert_match(/SCHEMA/, schema_filter)
+    assert_match(/singleton_class\.prepend\(AppsignalSchemaEventFilter\)/, schema_filter)
+
+    production_path = "#{@app_dir}/config/environments/production.rb"
+    production_rb = File.read(production_path)
+    assert_match(/# === appsignal-broadcast template start ===/, production_rb)
+    assert_match(/# === appsignal-broadcast template end ===/, production_rb)
+    assert_match(/Appsignal::Logger\.new\("rails"\)/, production_rb)
+    assert_match(/broadcast_to\(stdout_logger\)/, production_rb)
+    assert_match(/ActiveSupport::TaggedLogging\.new\(appsignal_logger\)/, production_rb)
+    assert_equal 1, production_rb.scan(/appsignal-broadcast template start/).count,
+      "Sentinel start marker should appear exactly once"
+
+    # Idempotency: re-applying produces no further diff
+    appsignal_rb_before = File.read(appsignal_rb_path)
+    schema_filter_before = File.read(schema_filter_path)
+    production_rb_before = File.read(production_path)
+
+    apply_template("appsignal-broadcast")
+
+    gemfile_after = File.read("#{@app_dir}/Gemfile")
+    assert_equal 1, gemfile_after.scan(/gem "appsignal"/).count,
+      "Re-running the template must not add appsignal again"
+    assert_equal appsignal_rb_before, File.read(appsignal_rb_path),
+      "Re-running the template must not modify config/appsignal.rb"
+    assert_equal schema_filter_before, File.read(schema_filter_path),
+      "Re-running the template must not modify the schema-event filter initializer"
+    production_rb_after = File.read(production_path)
+    assert_equal production_rb_before, production_rb_after,
+      "Re-running the template must not modify config/environments/production.rb"
+    assert_equal 1, production_rb_after.scan(/appsignal-broadcast template start/).count,
+      "Re-running the template must not duplicate the sentinel block"
+
+    assert_rails_boots
+  end
+
   private
 
   def create_rails_app
