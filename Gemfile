@@ -4,7 +4,7 @@ ruby file: ".ruby-version"
 
 gem "jekyll", "~> 4.3"
 gem "logger"
-gem "tailwindcss-ruby", "~> 4.2"
+gem "tailwindcss-ruby", "~> 4.3"
 
 group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
