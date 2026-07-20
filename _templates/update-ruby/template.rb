@@ -11,20 +11,13 @@ unless File.exist?(".ruby-version")
   say "No .ruby-version found — the workflow bumps .ruby-version, so add one for it to do anything.", :yellow
 end
 
-# Single-quoted heredoc: the workflow's own ${{ ... }} and ${SHELL} expansions
-# are written verbatim, never evaluated by this Ruby script.
+# Single-quoted heredoc keeps the workflow's ${{ }} and ${...} literal.
 workflow = <<~'YAML'
   name: Update Ruby
 
-  # Weekly check for a newer Ruby. If one is available, open a PR that bumps
-  # .ruby-version (and the Dockerfile build arg / Gemfile.lock) after proving
-  # the app installs and its tests pass on the new version.
-  #
-  # "Latest" means the newest stable CRuby that ruby/setup-ruby can actually
-  # install — read from the versions manifest at the SAME @v1 ref pinned below.
-  # A Ruby can be released days before its prebuilt CI binary exists; proposing
-  # one CI can't install just yields a red, unmergeable PR. Reading the pinned
-  # ref's manifest avoids that.
+  # Source: railstemplates.org/update-ruby — weekly PR bumping Ruby to the newest
+  # version ruby/setup-ruby can install (read from the @v1 manifest pinned below,
+  # so it never proposes a version CI can't install yet).
 
   on:
     schedule:
@@ -105,14 +98,11 @@ workflow = <<~'YAML'
           if: steps.detect.outputs.update == 'true'
           uses: peter-evans/create-pull-request@v7
           with:
-            # Works out of the box with the default GITHUB_TOKEN (the steps above
-            # already validated the bump). Add a RUBY_UPDATE_TOKEN PAT if you also
-            # want the PR to trigger your normal CI — no other change needed.
+            # Defaults to GITHUB_TOKEN; add a RUBY_UPDATE_TOKEN PAT to also trigger CI.
             token: ${{ secrets.RUBY_UPDATE_TOKEN || secrets.GITHUB_TOKEN }}
             branch: automation/update-ruby
             delete-branch: true
-            # Candidate paths — create-pull-request only stages what actually
-            # changed, so an absent Dockerfile or unchanged Gemfile.lock is ignored.
+            # Candidate paths; unchanged or absent ones are ignored.
             add-paths: |
               .ruby-version
               Dockerfile
