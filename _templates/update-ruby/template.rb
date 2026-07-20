@@ -111,6 +111,8 @@ workflow = <<~'YAML'
             token: ${{ secrets.RUBY_UPDATE_TOKEN || secrets.GITHUB_TOKEN }}
             branch: automation/update-ruby
             delete-branch: true
+            # Candidate paths — create-pull-request only stages what actually
+            # changed, so an absent Dockerfile or unchanged Gemfile.lock is ignored.
             add-paths: |
               .ruby-version
               Dockerfile
@@ -135,7 +137,7 @@ say ""
 say "✅ Update Ruby workflow added at .github/workflows/update-ruby.yml", :green
 say ""
 say "📋 It runs weekly (and on demand) and opens a PR only after the app installs", :blue
-say "   and tests pass on the new Ruby — so the PR is safe to merge as-is."
+say "   and `bin/rails test` passes on the new Ruby (swap that command if you use RSpec)."
 say ""
 say "⚙️  One prerequisite:", :yellow
 say "   Settings → Actions → General → allow GitHub Actions to create and approve"

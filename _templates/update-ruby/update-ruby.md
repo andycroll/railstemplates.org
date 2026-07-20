@@ -35,7 +35,7 @@ It deliberately does **not** rewrite your `README`, `.tool-versions`, or any oth
 This template is a deliberately trimmed-down take on a workflow that had grown app-specific. Left out on purpose:
 
 - **No PAT required.** It validates the bump inside the job and opens the PR with the built-in `GITHUB_TOKEN`. If you *also* want the PR to trigger your normal CI, add a `RUBY_UPDATE_TOKEN` personal access token — the workflow picks it up automatically, no edit needed.
-- **No system tests, no browser setup.** It runs `bin/rails db:test:prepare test`. Native gems compiling and your suite passing is the signal that matters for a Ruby bump. Add a `test:system` step yourself if you want it.
+- **No system tests, no browser setup.** It runs `bin/rails db:test:prepare test` — Rails' default Minitest suite. Native gems compiling and your suite passing is the signal that matters for a Ruby bump. If you use RSpec or a custom test task, swap that command; add a `test:system` step too if you want it.
 - **No CI-file parsing.** It pins `ruby/setup-ruby@v1` and reads that same ref's manifest, so it doesn't care how (or whether) your `ci.yml` is structured.
 
 ## Prerequisites
