@@ -59,6 +59,37 @@ after_bundle do
     say "config/litestream.yml not found — run `bin/rails generate litestream:install` first.", :yellow
   end
 
+  # Schedule the replica verification the gem already ships. `Litestream.verify!`
+  # restores each configured database from its replica and reads it back, which
+  # is the only thing that distinguishes a working backup from a directory of
+  # files you have never opened. It matters more here, not less: the 10s
+  # sync-interval above widens the window a silent replication failure can hide
+  # in.
+  # Indent explicitly rather than relying on the heredoc: `<<~` strips the
+  # smallest common indentation, which would flatten the entry to column 0 and
+  # make the next existing key a child of ours.
+  verification_entry = <<~YAML.lines.map { |line| "  #{line}" }.join
+    litestream_backup_verification:
+      class: Litestream::VerificationJob
+      args: []
+      schedule: every day at 1am UTC
+  YAML
+
+  recurring_yml = "config/recurring.yml"
+
+  if !File.exist?(recurring_yml)
+    say "No config/recurring.yml (no Solid Queue?) — skipping the verification schedule.", :yellow
+    say "Schedule Litestream::VerificationJob yourself so the replica gets read back.", :yellow
+  elsif File.read(recurring_yml).include?("Litestream::VerificationJob")
+    say "Litestream::VerificationJob already scheduled, leaving it alone.", :yellow
+  elsif File.read(recurring_yml).match?(/^production:\s*$/)
+    inject_into_file recurring_yml, "\n#{verification_entry}", after: /^production:\s*\n/
+    say "✅ Scheduled Litestream::VerificationJob daily in config/recurring.yml.", :green
+  else
+    append_to_file recurring_yml, "\nproduction:\n#{verification_entry}"
+    say "✅ Added a production: block scheduling Litestream::VerificationJob.", :green
+  end
+
   say ""
   say "✅ Litestream configured.", :green
   say ""
