@@ -25,12 +25,20 @@ class RequestIdContextTest < TemplateTestCase
     assert_match(/def perform_now/, application_job)
     assert_match(/Current\.set\(request_id: request_id\)/, application_job)
 
-    # 3. ApplicationController sets Current.request_id in a before_action
+    # 3. A SetCurrentRequestId concern holds the setter; ApplicationController
+    #    only gains an include line.
+    concern_path = "#{@app_dir}/app/controllers/concerns/set_current_request_id.rb"
+    assert File.exist?(concern_path), "SetCurrentRequestId concern should be created"
+    concern = File.read(concern_path)
+    assert_match(/module SetCurrentRequestId/, concern)
+    assert_match(/extend ActiveSupport::Concern/, concern)
+    assert_match(/before_action :set_current_request_id/, concern)
+    assert_match(/Current\.request_id = request\.request_id/, concern)
+    assert_match(/Rails\.event\.set_context\(request_id: request\.request_id\) if Rails\.respond_to\?\(:event\)/, concern)
+
     application_controller_path = "#{@app_dir}/app/controllers/application_controller.rb"
     application_controller = File.read(application_controller_path)
-    assert_match(/before_action do/, application_controller)
-    assert_match(/Current\.request_id = request\.request_id/, application_controller)
-    assert_match(/Rails\.event\.set_context\(request_id: request\.request_id\) if Rails\.respond_to\?\(:event\)/, application_controller)
+    assert_match(/^  include SetCurrentRequestId$/, application_controller)
 
     # 4. filter_parameter_logging.rb includes the baseline and default-deny regex
     filter_path = "#{@app_dir}/config/initializers/filter_parameter_logging.rb"
@@ -43,6 +51,7 @@ class RequestIdContextTest < TemplateTestCase
     current_before = File.read(current_path)
     application_job_before = File.read(application_job_path)
     application_controller_before = File.read(application_controller_path)
+    concern_before = File.read(concern_path)
     filter_before = File.read(filter_path)
 
     apply_template("request-id-context")
@@ -53,13 +62,16 @@ class RequestIdContextTest < TemplateTestCase
       "Re-running the template must not modify app/jobs/application_job.rb"
     assert_equal application_controller_before, File.read(application_controller_path),
       "Re-running the template must not modify app/controllers/application_controller.rb"
+    assert_equal concern_before, File.read(concern_path),
+      "Re-running the template must not modify the SetCurrentRequestId concern"
     assert_equal filter_before, File.read(filter_path),
       "Re-running the template must not modify config/initializers/filter_parameter_logging.rb"
 
     # Single occurrence of each marker, no duplication
     assert_equal 1, File.read(current_path).scan(/attribute :request_id/).count
     assert_equal 1, File.read(application_job_path).scan(/attr_accessor :request_id/).count
-    assert_equal 1, File.read(application_controller_path).scan(/Current\.request_id = request\.request_id/).count
+    assert_equal 1, File.read(application_controller_path).scan(/include SetCurrentRequestId/).count
+    assert_equal 1, File.read(concern_path).scan(/Current\.request_id = request\.request_id/).count
     assert_equal 1, File.read(filter_path).scan(/:webhook_secret/).count
 
     assert_rails_boots
