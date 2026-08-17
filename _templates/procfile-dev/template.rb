@@ -25,10 +25,18 @@ header_comment = <<~COMMENT
   # Attach the debugger to the running web process with: rdbg -A
 COMMENT
 
+# `env VAR=value cmd` rather than a bare `VAR=value cmd` prefix: a Procfile
+# line is not guaranteed to be run through a shell, and only a shell honours
+# bare leading assignments. `env` is a real executable, so the variable reaches
+# the server under every process manager (foreman, overmind, hivemind).
+#
+# `tailwindcss:watch[always]` rather than plain `tailwindcss:watch`: under a
+# process manager stdout is a pipe, not a TTY, and the watcher exits
+# immediately without the `always` argument.
 managed_processes = {
-  "web" => "RUBY_DEBUG_OPEN=true bin/rails server -p ${PORT:-3000}"
+  "web" => "env RUBY_DEBUG_OPEN=true bin/rails server -p ${PORT:-3000}"
 }
-managed_processes["css"] = "bin/rails tailwindcss:watch" if tailwind_present
+managed_processes["css"] = "bin/rails tailwindcss:watch[always]" if tailwind_present
 managed_processes["jobs"] = "bin/jobs" if solid_queue_present
 
 existing = File.exist?("Procfile.dev") ? File.read("Procfile.dev") : ""
@@ -55,7 +63,7 @@ managed_processes.each do |name, command|
     if name == "web" && !current_line.include?("RUBY_DEBUG_OPEN=true")
       # Preserve the user's chosen web command but prepend the debug env var.
       command_part = current_line.sub(/\A#{Regexp.escape(prefix)}\s*/, "")
-      merged_lines[index] = "#{prefix} RUBY_DEBUG_OPEN=true #{command_part}".rstrip
+      merged_lines[index] = "#{prefix} env RUBY_DEBUG_OPEN=true #{command_part}".rstrip
     end
   else
     merged_lines << new_line
