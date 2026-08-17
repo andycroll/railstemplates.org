@@ -17,14 +17,16 @@ script_body = <<~'RUBY'
   #
   # What it does:
   #   1. Picks a stable workspace name (env vars first, then the directory).
-  #   2. Copies Rails credential keys from the main worktree if missing locally.
-  #   3. Runs `bundle install` and `bin/rails db:prepare`.
+  #   2. Copies Rails credential keys from the main checkout if missing locally.
+  #   3. Runs `bundle install` and `bin/rails db:prepare`, through `mise x --`
+  #      when mise manages this repo.
   #   4. Derives a deterministic port (3001-3999) and Redis DB (1-15) from the name.
   #   5. Writes those values into `.env.development.local` between sentinel markers,
   #      leaving any of your own lines outside the markers untouched.
-  #   6. Drops a `conductor.json` stub when running under Conductor.
   #
   # Re-running is safe: same name in, same values out, same managed block written.
+  #
+  # Conductor invokes this via the committed `conductor.json` in the repo root.
 
   require "digest"
   require "fileutils"
@@ -34,15 +36,9 @@ script_body = <<~'RUBY'
   ENV_FILE      = ".env.development.local".freeze
 
   def workspace_name
-    ENV["WORKSPACE_NAME"] ||
-      ENV["CONDUCTOR_WORKSPACE_NAME"] ||
+    env_value("WORKSPACE_NAME") ||
+      env_value("CONDUCTOR_WORKSPACE_NAME") ||
       File.basename(Dir.pwd)
-  end
-
-  def conductor?
-    !ENV["CONDUCTOR_WORKSPACE_NAME"].to_s.empty? ||
-      !ENV["CONDUCTOR_ROOT_PATH"].to_s.empty? ||
-      !ENV["CONDUCTOR_WORKSPACE_PATH"].to_s.empty?
   end
 
   def derived_port(name)
@@ -53,16 +49,31 @@ script_body = <<~'RUBY'
     Digest::SHA1.hexdigest(name).to_i(16) % 15 + 1
   end
 
+  # Path to the main checkout, or nil if we're already in it.
+  #
+  # The workspace manager's own env var wins over `git worktree list`. Conductor
+  # and Superset both hand us the path outright, and they know their own layout
+  # better than we can infer it — the git fallback assumes the main checkout is
+  # the first entry, which holds for plain `git worktree` but isn't guaranteed.
   def main_worktree_path
+    main = env_value("CONDUCTOR_ROOT_PATH") ||
+      env_value("SUPERSET_ROOT_PATH") ||
+      first_git_worktree
+    return nil if main.nil? || File.expand_path(main) == File.expand_path(Dir.pwd)
+    main
+  end
+
+  # This is a plain Ruby script, so no ActiveSupport `presence`. An env var set
+  # to the empty string is as good as unset.
+  def env_value(key)
+    value = ENV[key]
+    (value.nil? || value.empty?) ? nil : value
+  end
+
+  def first_git_worktree
     output = `git worktree list --porcelain 2>/dev/null`
     return nil if output.empty?
-
-    paths = output.lines.grep(/\Aworktree /).map { |l| l.sub(/\Aworktree /, "").strip }
-    current = File.expand_path(Dir.pwd)
-    # The first worktree returned by git is the main one.
-    main = paths.first
-    return nil if main.nil? || File.expand_path(main) == current
-    main
+    output.lines.grep(/\Aworktree /).map { |l| l.sub(/\Aworktree /, "").strip }.first
   end
 
   def copy_credentials_from(main_path)
@@ -84,13 +95,26 @@ script_body = <<~'RUBY'
     end
   end
 
-  def run_bundle_install
-    system("bundle", "install") || abort("bundle install failed")
+  # A fresh worktree usually has no Ruby activated for it yet, so a bare
+  # `bundle install` can run under whatever Ruby happens to be on PATH — the
+  # system one, or the last project's. When mise manages this repo, route both
+  # commands through `mise x --` so they get the Ruby `.ruby-version` asks for.
+  # Other version managers (rbenv, chruby, asdf) hook the shell and need no
+  # help here.
+  def mise_prefix
+    return [] unless File.exist?(".ruby-version") || File.exist?("mise.toml") || File.exist?(".mise.toml")
+    return [] unless system("command -v mise > /dev/null 2>&1")
+    system("mise", "install") # no-op when the Ruby is already installed
+    ["mise", "x", "--"]
   end
 
-  def run_db_prepare
+  def run_bundle_install(prefix)
+    system(*prefix, "bundle", "install") || abort("bundle install failed")
+  end
+
+  def run_db_prepare(prefix)
     return unless File.exist?("bin/rails")
-    system("bin/rails", "db:prepare") ||
+    system(*prefix, "bin/rails", "db:prepare") ||
       warn("bin/rails db:prepare failed (continuing)")
   end
 
@@ -122,17 +146,6 @@ script_body = <<~'RUBY'
     File.write(path, output)
   end
 
-  def write_conductor_stub(name, port)
-    stub = <<~JSON
-      {
-        "name": #{name.inspect},
-        "port": #{port},
-        "managed_by": "bin/workspace-setup"
-      }
-    JSON
-    File.write("conductor.json", stub) unless File.exist?("conductor.json")
-  end
-
   name  = workspace_name
   port  = derived_port(name)
   redis = derived_redis_db(name)
@@ -145,8 +158,9 @@ script_body = <<~'RUBY'
   main = main_worktree_path
   copy_credentials_from(main) if main
 
-  run_bundle_install
-  run_db_prepare
+  prefix = mise_prefix
+  run_bundle_install(prefix)
+  run_db_prepare(prefix)
 
   managed = <<~ENVBODY
     # Managed by bin/workspace-setup. Edits inside this block are overwritten.
@@ -159,24 +173,43 @@ script_body = <<~'RUBY'
   upsert_managed_block(ENV_FILE, managed)
   puts "wrote #{ENV_FILE} (managed block)"
 
-  if conductor?
-    write_conductor_stub(name, port)
-    puts "wrote conductor.json"
-  end
-
   puts "done."
 RUBY
 
 create_file "bin/workspace-setup", script_body, skip: true
 chmod "bin/workspace-setup", 0755
 
+# conductor.json is how Conductor finds the script — it reads a committed file in
+# the repo root and runs the named scripts. It has to exist before a workspace is
+# created, so it's written here at apply time rather than by the setup script
+# itself (which only ever runs *inside* an already-created workspace).
+#
+# `runScriptMode: nonconcurrent` so setup finishes before run starts; two
+# concurrent `bundle install`s on the same gem home fight each other.
+conductor_json = <<~'JSON'
+  {
+    "scripts": {
+      "setup": "./bin/workspace-setup",
+      "run": "./bin/dev"
+    },
+    "runScriptMode": "nonconcurrent"
+  }
+JSON
+
+create_file "conductor.json", conductor_json, skip: true
+
 say ""
 say "bin/workspace-setup installed.", :green
 say "Run `bin/workspace-setup` from any worktree to:", :blue
-say "  - copy config/master.key + config/credentials/*.key from the main worktree"
-say "  - bundle install + bin/rails db:prepare"
+say "  - copy config/master.key + config/credentials/*.key from the main checkout"
+say "  - bundle install + bin/rails db:prepare (through mise when it manages this repo)"
 say "  - derive a deterministic PORT (3001-3999) and REDIS_DB (1-15)"
 say "  - write them into .env.development.local between sentinel markers"
+say ""
+say "conductor.json wires Conductor's setup/run scripts to bin/workspace-setup", :blue
+say "and bin/dev. Superset and plain `git worktree` need no config — the script", :blue
+say "resolves the main checkout from $CONDUCTOR_ROOT_PATH, $SUPERSET_ROOT_PATH,", :blue
+say "then `git worktree list`.", :blue
 say ""
 say "Override the workspace name with $WORKSPACE_NAME if you want stable ports", :yellow
 say "across renamed directories. Conductor's $CONDUCTOR_WORKSPACE_NAME is honoured", :yellow
