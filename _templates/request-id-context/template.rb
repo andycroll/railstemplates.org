@@ -76,29 +76,50 @@ end
 # --- 3. app/controllers/application_controller.rb -----------------------------
 
 application_controller_path = "app/controllers/application_controller.rb"
+concern_path = "app/controllers/concerns/set_current_request_id.rb"
 
-controller_block = <<~'RUBY'
-  before_action do
-    Current.request_id = request.request_id
-    # Make request_id flow into Rails.event lines emitted from controllers.
-    # The same setter runs inside ApplicationJob#perform_now for jobs.
-    Rails.event.set_context(request_id: request.request_id) if Rails.respond_to?(:event)
+# The setter lives in a concern rather than as an anonymous `before_action do`
+# block injected into ApplicationController. ApplicationController is a file
+# users edit constantly, so anything we inject there has to be recognised again
+# on the next run by matching a string inside it — fragile, and it silently
+# stops working the moment someone reformats the block. A concern reduces our
+# footprint in that file to a single `include` line, and makes both the
+# idempotency check and the undo obvious.
+create_file concern_path, <<~'RUBY', skip: true
+  module SetCurrentRequestId
+    extend ActiveSupport::Concern
+
+    included do
+      before_action :set_current_request_id
+    end
+
+    private
+
+    # `Rails.event.set_context` makes request_id flow into Rails.event lines
+    # emitted from controllers. The same setter runs inside
+    # ApplicationJob#perform_now for jobs. Guarded so pre-8.1 apps skip it.
+    def set_current_request_id
+      Current.request_id = request.request_id
+      Rails.event.set_context(request_id: request.request_id) if Rails.respond_to?(:event)
+    end
   end
 RUBY
 
-# inject_into_class does not auto-indent; pre-indent the block by two spaces.
-controller_block_indented = controller_block.lines.map { |l| l.strip.empty? ? "\n" : "  #{l}" }.join + "\n"
-
 if File.exist?(application_controller_path)
-  if File.read(application_controller_path).include?("Current.request_id = request.request_id")
-    say "✓ ApplicationController already sets Current.request_id, skipping.", :yellow
+  if File.read(application_controller_path).include?("include SetCurrentRequestId")
+    say "✓ ApplicationController already includes SetCurrentRequestId, skipping.", :yellow
   else
-    inject_into_class application_controller_path, "ApplicationController", controller_block_indented
-    say "✓ Added before_action setting Current.request_id to ApplicationController.", :green
+    inject_into_class application_controller_path, "ApplicationController",
+      "  include SetCurrentRequestId\n"
+    say "✓ Included SetCurrentRequestId in ApplicationController.", :green
   end
 else
-  create_file application_controller_path, "class ApplicationController < ActionController::Base\n#{controller_block_indented}end\n"
-  say "✓ Created ApplicationController with request_id before_action.", :green
+  create_file application_controller_path, <<~'RUBY'
+    class ApplicationController < ActionController::Base
+      include SetCurrentRequestId
+    end
+  RUBY
+  say "✓ Created ApplicationController including SetCurrentRequestId.", :green
 end
 
 # --- 4. config/initializers/filter_parameter_logging.rb -----------------------
