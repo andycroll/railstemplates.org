@@ -15,6 +15,7 @@ The one non-default this template adds — and the entire reason it exists — i
   - `config/litestream.yml` — the Litestream config (databases + replicas)
   - `config/initializers/litestream.rb` — wires the gem's `config.litestream.*` settings to ENV / Rails credentials
 - Injects `sync-interval: 10s` into every replica in `config/litestream.yml`, with an inline comment explaining the trade-off
+- Schedules the gem's `Litestream::VerificationJob` daily in `config/recurring.yml`, if that file exists
 
 ## Why `sync-interval: 10s` — The Whole Point
 
@@ -71,6 +72,22 @@ This keeps replication independent of request traffic — a slow or hung web pro
 
 Either way, the replica **bucket and credentials** are read from `config/initializers/litestream.rb`, which pulls them from ENV variables (`LITESTREAM_REPLICA_BUCKET`, `LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY`) or Rails encrypted credentials. Edit that initializer to point at your storage provider.
 
+## Verifying the Replica
+
+A replica nobody reads back is a directory of files you hope are a database. The `litestream` gem ships a job for this — `Litestream::VerificationJob` calls `Litestream.verify!` on each configured database, which restores it from the replica and reads it back. The template schedules it daily:
+
+```yaml
+production:
+  litestream_backup_verification:
+    class: Litestream::VerificationJob
+    args: []
+    schedule: every day at 1am UTC
+```
+
+This matters *more* because of the `sync-interval` change above, not less. Stretching the interval to 10s widens the window in which a silently broken replica looks exactly like a healthy one — fewer writes means fewer chances for a failing upload to announce itself. A daily read-back is what closes that gap.
+
+The entry goes under an existing `production:` key if there is one, preserving any recurring jobs already there. Apps without `config/recurring.yml` (no Solid Queue) get a reminder to schedule it themselves instead.
+
 ## Re-running Safely
 
-The template is idempotent. If `config/litestream.yml` already exists it skips every step — it won't re-run the generator and won't inject a second `sync-interval`. Tweak the generated `config/litestream.yml` and `config/initializers/litestream.rb` directly; the template will not overwrite your edits.
+The template is idempotent. If `config/litestream.yml` already exists it skips every step — it won't re-run the generator, won't inject a second `sync-interval`, and won't schedule a second verification job. Tweak the generated `config/litestream.yml` and `config/initializers/litestream.rb` directly; the template will not overwrite your edits.
