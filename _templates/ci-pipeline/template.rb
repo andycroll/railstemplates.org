@@ -37,7 +37,14 @@ ci_rb = <<~'RUBY'
     step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
     step "Tests: Rails", "bin/rails test"
-    step "Tests: System", "bin/rails test:system"
+    # Catches a seeds file that has drifted from the schema — a break you'd
+    # otherwise only find the next time you set up a fresh machine.
+    step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
+
+    # System tests get their own parallel job in .github/workflows/ci.yml,
+    # where the wall-clock is free. Locally they're the slowest thing in the
+    # pipeline, so bin/ci leaves them out. Uncomment to run them here too.
+    # step "Tests: System", "bin/rails test:system"
 
     # Optional: set a green GitHub commit status to unblock PR merge.
     # Requires the `gh` CLI and `gh extension install basecamp/gh-signoff`.
@@ -50,7 +57,7 @@ ci_rb = <<~'RUBY'
 RUBY
 
 # Rails 8.1's `rails new` scaffolds a minimal config/ci.rb (setup + tests only).
-# Replace it with the fuller pipeline — security scans and system tests — that
+# Replace it with the fuller pipeline — security scans and a seeds check — that
 # mirrors the workflow below. Guarded so a re-run (and any file already carrying
 # our Brakeman step) is left untouched.
 if File.exist?("config/ci.rb") && File.read("config/ci.rb").include?('step "Security: Brakeman code analysis"')
@@ -77,7 +84,7 @@ ci_yml = <<~'YAML'
 
       steps:
         - name: Checkout code
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Set up Ruby
           uses: ruby/setup-ruby@v1
@@ -95,7 +102,7 @@ ci_yml = <<~'YAML'
 
       steps:
         - name: Checkout code
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Set up Ruby
           uses: ruby/setup-ruby@v1
@@ -111,7 +118,7 @@ ci_yml = <<~'YAML'
         RUBOCOP_CACHE_ROOT: tmp/rubocop
       steps:
         - name: Checkout code
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Set up Ruby
           uses: ruby/setup-ruby@v1
@@ -119,7 +126,7 @@ ci_yml = <<~'YAML'
             bundler-cache: true
 
         - name: Prepare RuboCop cache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           env:
             DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
           with:
@@ -142,7 +149,7 @@ ci_yml = <<~'YAML'
       #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
       steps:
         - name: Checkout code
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Set up Ruby
           uses: ruby/setup-ruby@v1
@@ -167,7 +174,7 @@ ci_yml = <<~'YAML'
       #    options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
       steps:
         - name: Checkout code
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Set up Ruby
           uses: ruby/setup-ruby@v1
@@ -182,7 +189,7 @@ ci_yml = <<~'YAML'
           run: bin/rails db:test:prepare test:system
 
         - name: Keep screenshots from failed system tests
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           if: failure()
           with:
             name: screenshots

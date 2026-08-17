@@ -13,7 +13,7 @@ Wires Rails 8.1's [`ActiveSupport::ContinuousIntegration`](https://api.rubyonrai
 ## What It Does
 
 - Creates `bin/ci` — an executable Ruby wrapper that boots Rails and loads the pipeline.
-- Creates `config/ci.rb` — pipeline definition using `CI.run do step "name", "command" end`.
+- Creates `config/ci.rb` — pipeline definition using `CI.run do step "name", "command" end`: setup, RuboCop, three security scans, `bin/rails test`, and a `db:seed:replant` seeds check.
 - Creates `.github/workflows/ci.yml` with five parallel jobs:
   - `scan_ruby` — Brakeman static analysis + `bundler-audit` for gem CVEs.
   - `scan_js` — `bin/importmap audit` for JavaScript dependency CVEs.
@@ -27,6 +27,11 @@ A single declaration of "what CI does" lives in `config/ci.rb` and gets executed
 
 - **Locally**, you run `bin/ci` before pushing — same steps, same order, same exit codes.
 - **On GitHub Actions**, each job runs the relevant `bin/...` command directly so they parallelise. The workflow and `config/ci.rb` stay in sync because both call the same `bin/` scripts.
+
+## Two Deliberate Asymmetries
+
+- **System tests run in CI, not in `bin/ci`.** In the workflow they're their own job, so their wall-clock overlaps everything else and costs you nothing. Locally they're the slowest step by a wide margin, and a pre-push check you avoid running is worse than one that skips a job. The step ships commented out in `config/ci.rb` — uncomment it if you want it locally.
+- **A seeds check that CI doesn't run.** `env RAILS_ENV=test bin/rails db:seed:replant` catches a `db/seeds.rb` that has drifted from the schema, which otherwise only surfaces the next time someone sets up a fresh machine. It's cheap locally and needs a writable test database, so it lives in `bin/ci`.
 
 ## Idempotency
 

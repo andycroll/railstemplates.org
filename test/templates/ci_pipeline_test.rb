@@ -27,8 +27,12 @@ class CiPipelineTest < TemplateTestCase
     # default rather than being skipped.
     assert_match(/step "Security: Brakeman code analysis"/, ci_rb,
       "config/ci.rb must carry the Brakeman step, not the barer Rails default")
-    assert_match(/step "Tests: System", "bin\/rails test:system"/, ci_rb,
-      "config/ci.rb must carry the system-test step")
+    assert_match(/step "Tests: Seeds", "env RAILS_ENV=test bin\/rails db:seed:replant"/, ci_rb,
+      "config/ci.rb must carry the seeds check")
+    # System tests get their own parallel job in the workflow; locally they're
+    # the slowest step, so bin/ci ships them commented out.
+    assert_match(/^  # step "Tests: System", "bin\/rails test:system"$/, ci_rb,
+      "config/ci.rb must ship the system-test step commented out")
 
     # .github/workflows/ci.yml exists with five jobs
     workflow_path = "#{@app_dir}/.github/workflows/ci.yml"
@@ -39,6 +43,11 @@ class CiPipelineTest < TemplateTestCase
     assert_match(/^  lint:$/, workflow)
     assert_match(/^  test:$/, workflow)
     assert_match(/^  system-test:$/, workflow)
+
+    # Current action majors, so a fresh app doesn't open a Dependabot PR on day one
+    assert_match(/uses: actions\/checkout@v7$/, workflow)
+    assert_match(/uses: actions\/cache@v6$/, workflow)
+    assert_match(/uses: actions\/upload-artifact@v7$/, workflow)
 
     # Rubocop cache keyed on .ruby-version + rubocop configs + Gemfile.lock
     assert_match(/hashFiles\('\.ruby-version', '\*\*\/\.rubocop\.yml', '\*\*\/\.rubocop_todo\.yml', 'Gemfile\.lock'\)/, workflow)
