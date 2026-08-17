@@ -17,14 +17,22 @@ class LogrageTest < TemplateTestCase
     assert_match(/Rails\.env\.staging\?/, initializer)
     assert_match(/Lograge::Formatters::Json\.new/, initializer)
     assert_match(/custom_payload/, initializer)
-    assert_match(/filtered_parameters/, initializer)
-    assert_match(/filtered_path/, initializer)
     assert_match(/request_id/, initializer)
     assert_match(/user_id/, initializer)
-    assert_match(/Current/, initializer)
     assert_match(/Rails::HealthController#show/, initializer)
-    refute_match(/event\.payload\[:params\]/, initializer,
+    assert_match(/ignore_actions/, initializer)
+    refute_match(/^[^#]*event\.payload\[:params\]/, initializer,
       "Must not log unfiltered event.payload[:params] — leaks secrets")
+
+    # Enhanced fields from #33
+    assert_match(/workspace_id/, initializer)
+    assert_match(/remote_ip/, initializer)
+    assert_match(/event: "request"/, initializer,
+      "Initializer must stamp `event: \"request\"` on every line")
+    assert_match(/config\.lograge\.logger\s*=\s*Rails\.application\.config\.logger/, initializer,
+      "Initializer must route lograge through the composed Rails.logger")
+    assert_match(/filtered_params/, initializer,
+      "Initializer must include filtered_params on error responses")
 
     # Idempotency: re-applying the template produces no further diff
     initializer_before = File.read(initializer_path)
