@@ -14,24 +14,50 @@ end
 
 initializer_body = <<~'RUBY'
   # One JSON line per Active Job execution, replacing Rails' default
-  # `Performing…` / `Performed…` output entirely. Argument records are
-  # emitted as GlobalIDs; hash args funnel through filter_parameters.
+  # `Performing…` / `Performed…` output entirely. Arguments are rendered by
+  # `JobArgumentLogging` so records become GlobalIDs and sensitive hash keys
+  # become `[FILTERED]` before they reach the line.
+
+  # Renders an Active Job argument list for the log line.
+  #
+  # `perform.active_job` fires after deserialization, so arguments arrive as
+  # live objects — an Active Record instance handed straight to `to_json`
+  # renders its whole attribute set (`email`, `password_digest`, …). Records
+  # therefore have to be reduced to GlobalIDs at *every* depth, not just at
+  # the top level: `ActionMailer::MailDeliveryJob` nests its record argument
+  # inside a Hash (`{args: [user], params: nil}`), so a top-level-only pass
+  # leaks the whole user row on every `deliver_later`. Any job taking a hash
+  # or array of records has the same hole.
+  #
+  # `globalize` walks the structure first so no record survives to the
+  # `filter` pass, then `filter` applies `config.filter_parameters` to what
+  # remains — the same redaction controllers get on their params.
+  module JobArgumentLogging
+    module_function
+
+    def render(arguments)
+      filter.filter(args: globalize(Array(arguments)))[:args]
+    end
+
+    def globalize(value)
+      case value
+      when Hash then value.transform_values { globalize(_1) }
+      when Array then value.map { globalize(_1) }
+      else value.respond_to?(:to_global_id) ? value.to_global_id.to_s : value
+      end
+    end
+
+    # Built once: `config.filter_parameters` compiles every configured
+    # pattern, and this runs on every job execution.
+    def filter
+      @filter ||= ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    end
+  end
 
   ActiveSupport::Notifications.subscribe("perform.active_job") do |*args|
     event = ActiveSupport::Notifications::Event.new(*args)
     job = event.payload[:job]
     err = event.payload[:exception_object]
-
-    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
-    serialized_args = Array(job.arguments).map do |arg|
-      if arg.respond_to?(:to_global_id)
-        arg.to_global_id.to_s
-      elsif arg.is_a?(Hash)
-        filter.filter(arg)
-      else
-        arg
-      end
-    end
 
     fields = {
       event:         "job.perform",
@@ -40,7 +66,7 @@ initializer_body = <<~'RUBY'
       attempt:       job.executions,
       job_id:        job.job_id,
       request_id:    (Current.request_id if defined?(Current) && Current.respond_to?(:request_id)),
-      args:          serialized_args.presence,
+      args:          JobArgumentLogging.render(job.arguments).presence,
       duration_ms:   event.duration.to_i,
       status:        err ? "error" : "ok",
       error_class:   err&.class&.name,

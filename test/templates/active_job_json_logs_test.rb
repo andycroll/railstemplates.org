@@ -17,6 +17,8 @@ class ActiveJobJsonLogsTest < TemplateTestCase
     assert_match(/ActiveJob::Base\.prepend\(ActiveJobNoTagging\)/, initializer)
     assert_match(/ActiveSupport::ParameterFilter/, initializer)
     assert_match(/to_global_id/, initializer)
+    assert_match(/module JobArgumentLogging/, initializer)
+    assert_match(/JobArgumentLogging\.render\(job\.arguments\)/, initializer)
     assert_match(/SolidQueue::ReadyExecution\.count rescue nil/, initializer)
     assert_match(/defined\?\(Current\)/, initializer)
 
@@ -38,5 +40,29 @@ class ActiveJobJsonLogsTest < TemplateTestCase
       "Re-running the template must not modify the initializer"
 
     assert_rails_boots
+    assert_records_globalize_at_every_depth
+  end
+
+  private
+
+  # Records nested inside a hash or array argument must reduce to GlobalIDs
+  # too. A top-level-only conversion leaves them to `to_json`, which renders
+  # the whole attribute set — `ActionMailer::MailDeliveryJob` hits this on
+  # every `deliver_later` because it nests its record inside a hash.
+  def assert_records_globalize_at_every_depth
+    probe = File.join(@app_dir, "tmp/job_argument_logging_probe.rb")
+    File.write(probe, <<~RUBY)
+      record = Class.new { def to_global_id = "gid://app/User/1" }.new
+      puts JobArgumentLogging.render([ record, { args: [ record ] }, [ record ] ]).to_json
+    RUBY
+
+    Bundler.with_unbundled_env do
+      Dir.chdir(@app_dir) do
+        output = `bundle exec rails runner tmp/job_argument_logging_probe.rb 2>&1`
+        assert_includes output,
+          '["gid://app/User/1",{"args":["gid://app/User/1"]},["gid://app/User/1"]]',
+          "records must reduce to GlobalIDs at every depth, not just the top level: #{output}"
+      end
+    end
   end
 end
