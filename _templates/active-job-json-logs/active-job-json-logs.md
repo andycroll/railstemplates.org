@@ -11,7 +11,7 @@ No gem is added — this uses stdlib `ActiveSupport::Notifications`.
 ## What It Does
 
 - Subscribes to `perform.active_job` and emits a single JSON line per job execution
-- Filters job arguments through `Rails.application.config.filter_parameters` (records become GlobalIDs)
+- Reduces every Active Record argument to a GlobalID — at any nesting depth — then filters what's left through `Rails.application.config.filter_parameters`
 - Prepends `ActiveJob::Base#tag_logger` with a no-op so the `[ActiveJob] [JobClass] [job_id]` TaggedLogging prefix is gone from every line the job emits
 - Detaches the default `ActiveJob::LogSubscriber` in production/staging so the classic `Performing… / Performed…` lines don't double up
 - Wraps the detach/prepend in a `Rails.env.production? || Rails.env.staging?` guard so dev/test boot cleanly and you can still read the default logs when debugging locally
@@ -49,7 +49,28 @@ Fields that aren't applicable get dropped via `.compact`:
 - **Production/staging only.** The detach + prepend run inside a `Rails.env.production? || Rails.env.staging?` guard so dev/test see the familiar default logs when you're debugging a job locally. The subscriber itself is registered in all environments — it's a no-op when no jobs fire.
 - **`after_initialize` for the detach.** `ActiveJob::LogSubscriber` is loaded lazily; detaching it at boot before it's attached is a no-op. `after_initialize` makes the detach reliable.
 - **Filtered args.** Hash arguments go through `ActiveSupport::ParameterFilter` so secrets in job payloads (`password`, `token`, `api_key`) are scrubbed using your existing `filter_parameters` config.
-- **GlobalID for records.** ActiveRecord arguments serialize as `gid://app/Model/id` rather than dumping the whole object, keeping the line small and stable.
+- **GlobalID for records, at every depth.** `perform.active_job` fires *after* deserialization, so arguments arrive as live objects. An Active Record instance handed to `to_json` renders its whole attribute set — every column, `email` and `password_digest` included. `JobArgumentLogging#globalize` walks hashes and arrays recursively so no record survives to serialization; each becomes `gid://app/Model/id`.
+
+## The Nesting Hazard
+
+A top-level-only conversion looks correct and passes the obvious test:
+
+```ruby
+# Broken — only checks the outermost args
+Array(job.arguments).map do |arg|
+  arg.respond_to?(:to_global_id) ? arg.to_global_id.to_s : arg
+end
+```
+
+`ActionMailer::MailDeliveryJob` nests its record argument inside a hash, so this leaks the entire user row on every single `deliver_later`:
+
+```json
+"args": ["UserMailer", "confirmation", "deliver_now",
+  {"args": [{"id": 1, "email": "sarah@example.com",
+             "password_digest": "$2a$12$Z3hw…"}]}]
+```
+
+`filter_parameters` does not save you here — the record is not a hash, so there are no keys to match on. Only the recursive pass fixes it. Same hole applies to any job whose arguments are a hash or array of records.
 
 ## Composition
 
